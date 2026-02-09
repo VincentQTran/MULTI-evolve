@@ -28,7 +28,54 @@ def setup_page():
         page_icon="🧬",
         layout="wide"
     )
-    st.title("MULTI-evolve")
+
+    # Custom branded header with subtitle
+    st.markdown("""
+        <h1 style="margin-bottom: 0; padding-bottom: 0;">MULTI-evolve</h1>
+        <p style="color: #666; margin-top: 0.2rem; font-size: 1.05rem;">
+            A framework for engineering hyperactive multi-mutants
+        </p>
+        <hr style="margin-top: 0.5rem; margin-bottom: 0.5rem; border: none; border-top: 1px solid #e0e0e0;">
+    """, unsafe_allow_html=True)
+
+    # Global styles — injected once, available to all tabs
+    st.markdown("""
+        <style>
+            /* Terminal output container (used by all tabs) */
+            .terminal-container {
+                max-height: 400px;
+                overflow-y: auto;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 12px;
+                background-color: #1e1e1e;
+                color: #d4d4d4;
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                font-size: 0.85rem;
+                white-space: pre-wrap;
+            }
+
+            /* Reduce default top padding */
+            .block-container {
+                padding-top: 2rem;
+            }
+
+            /* Compact file uploader drop zones with breathing room */
+            [data-testid="stFileUploader"] section {
+                padding: 0.4rem 0.75rem;
+            }
+
+            /* Add inner padding to form containers */
+            [data-testid="stForm"] {
+                padding: 0.75rem 1rem;
+            }
+
+            /* Tighter tab bar spacing */
+            .stTabs [data-baseweb="tab-list"] {
+                gap: 0.5rem;
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
 def create_protein_directory(protein_name):
     """
@@ -115,36 +162,39 @@ def validate_files(protein_name, wt_files_aa=None, wt_file_aa=None,wt_file_dna=N
 
 def train_models():
     """Train neural network models section"""
-    # st.header("1. Train Neural Network Models")
-    
-    col1, col2 = st.columns([1,1])
-    
-    with col1:
-        protein_name = st.text_input("Protein Name")
-        wt_files_aa = st.file_uploader("Upload Wildtype Amino Acid Sequence FASTA", accept_multiple_files=True, type=['fasta', 'fa'])
-        dataset_file = st.file_uploader("Upload Training Dataset (CSV)", type=['csv'], accept_multiple_files=False)
-        experiment_name = st.text_input("Experiment Name", value="test")
-        wandb_key = st.text_input("WandB API Key", type="password")
-        mode = st.selectbox("Training Mode", ["test", "standard"])
-        
-    with col2:
-        st.markdown("""
-        ### Step 1: Train Neural Network Models
-        
-        This tool performs a grid search over many neural network architectures to find the best performing model for a given protein and dataset.
-        
-        #### Input Files and Parameters
-        
-        - **Training Dataset (CSV)**: CSV file with columns 'mutation' and 'property_value'. Variants should be formatted as ```A40P/E61Y```, or for protein complexes as ```A40P/E61Y:WT```, where ```:``` separates the individual chains (e.g. ```chain 1 mutations:chain 2 mutations```), ```/``` separates the individual mutations, and ```WT``` indicates the wildtype sequence. A sample dataset for APEX peroxidase can be found in ```data/example_protein/example_dataset.csv```. For a protein complex example, use ```data/example_multichain_protein/example_dataset.csv```.
-        - **Wildtype Amino Acid Sequence FASTA**: Protein sequence in FASTA format. Upload multiple sequence files if working with a protein complex in the same order as you formatted the variants in the training dataset. A sample sequence of APEX peroxidase can be found in ```data/example_protein/apex.fasta```. For a protein complex example, upload in the following order: ```data/example_multichain_protein/vh_chain1.fasta```, ```data/example_multichain_protein/vl_chain2.fasta```.
-        - **Experiment Name**: Name of the model training experiment (e.g. APEX_gridsearch). This should be used for the subsequent step 2 for proposing mutations.
-        - **WandB API Key**: API key for logging to WandB. Create an account and get an API key from [WandB](https://wandb.ai/authorize).
-        - **Training Mode**: 
-            - `test`: Test the training process for a single architecture.
-            - `standard`: Performs a grid search over many architectures. Will take a longer time to run.
-        """)
-        
-    if st.button("Train Models"):
+
+    with st.form("train_models_form"):
+        col1, col2 = st.columns([2,3])
+
+        with col1:
+            protein_name = st.text_input("Protein Name")
+            wt_files_aa = st.file_uploader("Upload Wildtype Amino Acid Sequence FASTA", accept_multiple_files=True, type=['fasta', 'fa'])
+            dataset_file = st.file_uploader("Upload Training Dataset (CSV)", type=['csv'], accept_multiple_files=False)
+            st.divider()
+            experiment_name = st.text_input("Experiment Name", value="test")
+            wandb_key = st.text_input("WandB API Key", type="password")
+            mode = st.selectbox("Training Mode", ["test", "standard"])
+
+        with col2:
+            st.markdown("""
+            ### Step 1: Train Neural Network Models
+
+            This tool performs a grid search over many neural network architectures to find the best performing model for a given protein and dataset.
+            """)
+            with st.expander("Input Files and Parameters", expanded=False):
+                st.markdown("""
+                - **Training Dataset (CSV)**: CSV file with columns 'mutation' and 'property_value'. Variants should be formatted as ```A40P/E61Y```, or for protein complexes as ```A40P/E61Y:WT```, where ```:``` separates the individual chains (e.g. ```chain 1 mutations:chain 2 mutations```), ```/``` separates the individual mutations, and ```WT``` indicates the wildtype sequence. A sample dataset for APEX peroxidase can be found in ```data/example_protein/example_dataset.csv```. For a protein complex example, use ```data/example_multichain_protein/example_dataset.csv```.
+                - **Wildtype Amino Acid Sequence FASTA**: Protein sequence in FASTA format. Upload multiple sequence files if working with a protein complex in the same order as you formatted the variants in the training dataset. A sample sequence of APEX peroxidase can be found in ```data/example_protein/apex.fasta```. For a protein complex example, upload in the following order: ```data/example_multichain_protein/vh_chain1.fasta```, ```data/example_multichain_protein/vl_chain2.fasta```.
+                - **Experiment Name**: Name of the model training experiment (e.g. APEX_gridsearch). This should be used for the subsequent step 2 for proposing mutations.
+                - **WandB API Key**: API key for logging to WandB. Create an account and get an API key from [WandB](https://wandb.ai/authorize).
+                - **Training Mode**:
+                    - `test`: Test the training process for a single architecture.
+                    - `standard`: Performs a grid search over many architectures. Will take a longer time to run.
+                """)
+
+        submitted = st.form_submit_button("Train Models", type="primary")
+
+    if submitted:
         if not all([experiment_name, protein_name, wandb_key, wt_files_aa, dataset_file]):
             st.error("Please fill in all required fields")
             return
@@ -172,28 +222,11 @@ def train_models():
             ]
             
             st.subheader("Terminal Output:")
-            # Add CSS styling for scrollable container
-            st.markdown("""
-                <style>
-                    .terminal-container {
-                        max-height: 400px;
-                        overflow-y: auto;
-                        border: 1px solid #ccc;
-                        padding: 10px;
-                        background-color: #f0f0f0;
-                        font-family: monospace;
-                        white-space: pre-wrap;
-                    }
-                </style>
-            """, unsafe_allow_html=True)
-            
-            # Show the command in a separate code block
             st.code(f"$ {' '.join(command)}", language="bash")
-            
-            # Create container for scrollable output
-            with st.container():
+
+            with st.container(border=True):
                 terminal_output = st.empty()
-            
+
             with st.spinner("Training models..."):
                 # Run the command and capture all output
                 process = subprocess.Popen(
@@ -233,43 +266,44 @@ def train_models():
 
 def propose_mutations():
     """Propose mutations section"""
-    # st.header("2. Propose MULTI-evolve Variants")
-    
-    col1, col2 = st.columns([1,1])
-    
-    with col1:
-        protein_name = st.text_input("Protein Name", key="propose_protein")
-        wt_files_aa = st.file_uploader("Upload Wildtype Amino Acid Sequence FASTA", accept_multiple_files=True, type=['fasta', 'fa'], key="propose_wt")
-        dataset_file = st.file_uploader("Upload Training Dataset (CSV)", type=['csv'], key="propose_dataset")
-        mutation_pool = st.file_uploader("Upload Mutation Pool (CSV)", type=['csv'])
-        experiment_name = st.text_input("Experiment Name", key="propose_exp")
-        top_muts = st.number_input("Top Mutations per Load", min_value=1, value=3)
-        export_name = st.text_input("Export Name", value="multievolve_proposals")
-        
-    with col2:
-        st.markdown("""
-        ### Step 2: Propose MULTI-evolve Variants
-        
-        This tool proposes MULTI-evolve variants using a trained neural network model, whose ideal architecture is selected from a grid search in Step 1.
 
-        #### Input Files and Parameters
-        
-        - **Wildtype Amino Acid Sequence FASTA**: Protein sequence in FASTA format. Upload multiple sequence files if working with a protein complex. Same file(s) as Step 1. A sample sequence of APEX peroxidase can be found in ```data/example_protein/apex.fasta```. For a protein complex example, upload in the following order: ```data/example_multichain_protein/vh_chain1.fasta```, ```data/example_multichain_protein/vl_chain2.fasta```.
-        - **Training Dataset (CSV)**: CSV file with columns 'mutation' and 'property_value'. Same file as Step 1. A sample dataset for APEX peroxidase can be found in ```data/example_protein/example_dataset.csv```. For a protein complex example, use ```data/example_multichain_protein/example_dataset.csv```. 
-        - **Mutation Pool (CSV)**: Path to the mutation pool CSV file, which is a list of mutations to be used to generate the proposed combinatorial variants. It is a one column no header CSV file. Example is provided in ```data/example_protein/combo_muts.csv```. For a protein complex example, use ```data/example_multichain_protein/combo_muts.csv```.
-        - **Experiment Name**: Name of the model training experiment (e.g. APEX_gridsearch). Same experiment name as Step 1.
-        - **Top Mutations per Load**: Number of top mutations to propose per mutational load.
-        - **Export Name**: Name of the exported csv file containing the list of the proposed variants. This csv file can be used to generate MULTI-assembly mutagenic oligos for cloning the proposed variants in the ```Design MULTI-assembly Oligos``` tab.
-       
-        #### Outputs:
-        
-        A CSV file will be generated:
-        - `<Export Name>.csv`: List of proposed variants. If it is a protein complex, it will export files for each chain (e.g. ```<Export Name>_chain_1_mutants.csv```)
+    with st.form("propose_mutations_form"):
+        col1, col2 = st.columns([2,3])
 
-                    
-        """)
-        
-    if st.button("Propose Mutations"):
+        with col1:
+            protein_name = st.text_input("Protein Name", key="propose_protein")
+            wt_files_aa = st.file_uploader("Upload Wildtype Amino Acid Sequence FASTA", accept_multiple_files=True, type=['fasta', 'fa'], key="propose_wt")
+            dataset_file = st.file_uploader("Upload Training Dataset (CSV)", type=['csv'], key="propose_dataset")
+            mutation_pool = st.file_uploader("Upload Mutation Pool (CSV)", type=['csv'])
+            st.divider()
+            experiment_name = st.text_input("Experiment Name", key="propose_exp")
+            top_muts = st.number_input("Top Mutations per Load", min_value=1, value=3)
+            export_name = st.text_input("Export Name", value="multievolve_proposals")
+
+        with col2:
+            st.markdown("""
+            ### Step 2: Propose MULTI-evolve Variants
+
+            This tool proposes MULTI-evolve variants using a trained neural network model, whose ideal architecture is selected from a grid search in Step 1.
+            """)
+            with st.expander("Input Files and Parameters", expanded=False):
+                st.markdown("""
+                - **Wildtype Amino Acid Sequence FASTA**: Protein sequence in FASTA format. Upload multiple sequence files if working with a protein complex. Same file(s) as Step 1. A sample sequence of APEX peroxidase can be found in ```data/example_protein/apex.fasta```. For a protein complex example, upload in the following order: ```data/example_multichain_protein/vh_chain1.fasta```, ```data/example_multichain_protein/vl_chain2.fasta```.
+                - **Training Dataset (CSV)**: CSV file with columns 'mutation' and 'property_value'. Same file as Step 1. A sample dataset for APEX peroxidase can be found in ```data/example_protein/example_dataset.csv```. For a protein complex example, use ```data/example_multichain_protein/example_dataset.csv```.
+                - **Mutation Pool (CSV)**: Path to the mutation pool CSV file, which is a list of mutations to be used to generate the proposed combinatorial variants. It is a one column no header CSV file. Example is provided in ```data/example_protein/combo_muts.csv```. For a protein complex example, use ```data/example_multichain_protein/combo_muts.csv```.
+                - **Experiment Name**: Name of the model training experiment (e.g. APEX_gridsearch). Same experiment name as Step 1.
+                - **Top Mutations per Load**: Number of top mutations to propose per mutational load.
+                - **Export Name**: Name of the exported csv file containing the list of the proposed variants. This csv file can be used to generate MULTI-assembly mutagenic oligos for cloning the proposed variants in the ```Design MULTI-assembly Oligos``` tab.
+                """)
+            with st.expander("Outputs", expanded=False):
+                st.markdown("""
+                A CSV file will be generated:
+                - `<Export Name>.csv`: List of proposed variants. If it is a protein complex, it will export files for each chain (e.g. ```<Export Name>_chain_1_mutants.csv```)
+                """)
+
+        submitted = st.form_submit_button("Propose Mutations", type="primary")
+
+    if submitted:
         if not all([experiment_name, protein_name, wt_files_aa, dataset_file, mutation_pool, export_name]):
             st.error("Please fill in all required fields")
             return
@@ -296,26 +330,9 @@ def propose_mutations():
             ]
 
             st.subheader("Terminal Output:")
-            # Add CSS styling for scrollable container
-            st.markdown("""
-                <style>
-                    .terminal-container {
-                        max-height: 400px;
-                        overflow-y: auto;
-                        border: 1px solid #ccc;
-                        padding: 10px;
-                        background-color: #f0f0f0;
-                        font-family: monospace;
-                        white-space: pre-wrap;
-                    }
-                </style>
-            """, unsafe_allow_html=True)
-
-            # Show the command in a separate code block
             st.code(f"$ {' '.join(command)}", language="bash")
-            
-            # Create container for scrollable output
-            with st.container():
+
+            with st.container(border=True):
                 terminal_output = st.empty()
 
             with st.spinner("Proposing mutations..."):
@@ -357,52 +374,54 @@ def propose_mutations():
 
 def design_oligos():
     """Design MULTI-assembly oligos section"""
-    # st.header("Design MULTI-assembly Oligos")
-    
-    col1, col2 = st.columns([1,1])
-    
-    with col1:
-        protein_name = st.text_input("Protein Name", key="MULTI-assembly_protein")
-        wt_file_dna = st.file_uploader("Upload Wildtype DNA Sequence FASTA", type=['fasta', 'fa'], key="oligo_wt")
-        mutations_file = st.file_uploader("Upload Mutations File (CSV)", type=['csv'])
-        species = st.selectbox("Species", ["human", "ecoli", "yeast"])
-        tm = st.number_input("Melting Temperature (°C)", value=80.0)
-        overhang = st.number_input("Overhang Length", value=33)
-        oligo_direction = st.selectbox("Oligo Direction", ["top", "bottom"])
-        output_type = st.selectbox("Output Type", ["design", "update"])
-        
-    with col2:
-        # information from readme
-        st.markdown("""
-        ### Step 3: Generate MULTI-assembly Mutagenic Oligos
-        
-        This tool generates mutagenic oligos for MULTI-assembly cloning of multi-mutant variants.
-        
-        #### Input Files and Parameters:
-                    
-        - **Protein Name**: Name of the protein to generate oligos for.
-        - **Wildtype DNA Sequence FASTA**: DNA sequence of the wildtype protein with overhangs from the protein's MULTI-assembly vector. The sequence should include overhangs for the MULTI-assembly oligos, wherein the overhangs are the same length on both ends of the DNA sequence. Recommended overhang length is 33 bp or longer. An example is found in ```data/example_protein/APEX_33overhang.fasta```.
-        - **Mutations File (CSV)**: List of proposed variants to generate oligos for. It is a one column no-header csv file with the variants. See ```data/example_protein/MULTI-assembly_input.csv``` for an example of the csv format.
-        - **Species**: Codon usage table selection (human/ecoli/yeast).
-        - **Melting Temperature**: Target Tm for oligos (recommended: 80°C).
-        - **Overhang Length**: Length of overhangs on both ends of sequence.
-        - **Oligo Direction**: 
-            - `top`: Oligos bind 5' to 3' in top strand orientation.
-            - `bottom`: Oligos bind 3' to 5' in bottom strand orientation.
-        - **Output Type**:
-            - `design`: Generate new oligo designs.
-            - `update`: Update existing oligo IDs.
-        
-        #### Outputs:
-        
-        Two CSV files will be generated:
-        1. `cloning_sheet.csv`: Assembly instructions describing which oligos to pool for each variant.
-        2. `oligos.csv`: Oligo sequences and IDs.
-        
-        The oligo IDs in `oligos.csv` can be customized with user-defined IDs. After editing the `oligos.csv` file, re-running with `update` will sync IDs between files.
-        """)
-        
-    if st.button("Design Oligos"):
+
+    with st.form("design_oligos_form"):
+        col1, col2 = st.columns([2,3])
+
+        with col1:
+            protein_name = st.text_input("Protein Name", key="MULTI-assembly_protein")
+            wt_file_dna = st.file_uploader("Upload Wildtype DNA Sequence FASTA", type=['fasta', 'fa'], key="oligo_wt")
+            mutations_file = st.file_uploader("Upload Mutations File (CSV)", type=['csv'])
+            st.divider()
+            species = st.selectbox("Species", ["human", "ecoli", "yeast"])
+            tm = st.number_input("Melting Temperature (°C)", value=80.0)
+            overhang = st.number_input("Overhang Length", value=33)
+            oligo_direction = st.selectbox("Oligo Direction", ["top", "bottom"])
+            output_type = st.selectbox("Output Type", ["design", "update"])
+
+        with col2:
+            st.markdown("""
+            ### Step 3: Generate MULTI-assembly Mutagenic Oligos
+
+            This tool generates mutagenic oligos for MULTI-assembly cloning of multi-mutant variants.
+            """)
+            with st.expander("Input Files and Parameters", expanded=False):
+                st.markdown("""
+                - **Protein Name**: Name of the protein to generate oligos for.
+                - **Wildtype DNA Sequence FASTA**: DNA sequence of the wildtype protein with overhangs from the protein's MULTI-assembly vector. The sequence should include overhangs for the MULTI-assembly oligos, wherein the overhangs are the same length on both ends of the DNA sequence. Recommended overhang length is 33 bp or longer. An example is found in ```data/example_protein/APEX_33overhang.fasta```.
+                - **Mutations File (CSV)**: List of proposed variants to generate oligos for. It is a one column no-header csv file with the variants. See ```data/example_protein/MULTI-assembly_input.csv``` for an example of the csv format.
+                - **Species**: Codon usage table selection (human/ecoli/yeast).
+                - **Melting Temperature**: Target Tm for oligos (recommended: 80°C).
+                - **Overhang Length**: Length of overhangs on both ends of sequence.
+                - **Oligo Direction**:
+                    - `top`: Oligos bind 5' to 3' in top strand orientation.
+                    - `bottom`: Oligos bind 3' to 5' in bottom strand orientation.
+                - **Output Type**:
+                    - `design`: Generate new oligo designs.
+                    - `update`: Update existing oligo IDs.
+                """)
+            with st.expander("Outputs", expanded=False):
+                st.markdown("""
+                Two CSV files will be generated:
+                1. `cloning_sheet.csv`: Assembly instructions describing which oligos to pool for each variant.
+                2. `oligos.csv`: Oligo sequences and IDs.
+
+                The oligo IDs in `oligos.csv` can be customized with user-defined IDs. After editing the `oligos.csv` file, re-running with `update` will sync IDs between files.
+                """)
+
+        submitted = st.form_submit_button("Design Oligos", type="primary")
+
+    if submitted:
         if not all([protein_name, mutations_file, wt_file_dna]):
             st.error("Please fill in all required fields")
             return
@@ -428,26 +447,9 @@ def design_oligos():
             ]
 
             st.subheader("Terminal Output:")
-            # Add CSS styling for scrollable container
-            st.markdown("""
-                <style>
-                    .terminal-container {
-                        max-height: 400px;
-                        overflow-y: auto;
-                        border: 1px solid #ccc;
-                        padding: 10px;
-                        background-color: #f0f0f0;
-                        font-family: monospace;
-                        white-space: pre-wrap;
-                    }
-                </style>
-            """, unsafe_allow_html=True)
-
-            # Show the command in a separate code block
             st.code(f"$ {' '.join(command)}", language="bash")
 
-            # Create container for scrollable output
-            with st.container():
+            with st.container(border=True):
                 terminal_output = st.empty()
 
             with st.spinner("Designing oligos..."):
@@ -489,43 +491,46 @@ def design_oligos():
 
 def zeroshot_predictions():
     """Perform zero-shot predictions section"""
-    # st.header("Perform Protein Language Model Zero-shot Ensemble")
-    
-    col1, col2 = st.columns([1,1])
 
-    with col1:
-        protein_name = st.text_input("Protein Name", key="zeroshot_protein")
-        wt_file_aa = st.file_uploader("Upload Wildtype Amino Acid Sequence FASTA", type=['fasta', 'fa'], key="zeroshot_wt")
-        pdb_files = st.file_uploader("Upload PDB/CIF Files", type=['pdb', 'cif'], accept_multiple_files=True, key="zeroshot_pdb")
-        chain_id = st.text_input("Chain ID", value="A", key="zeroshot_chain")
-        variants = st.number_input("Number of Variants", min_value=1, value=24)
-        excluded_pos = st.text_input("Excluded Positions (comma-separated, optional)", value="1,10,30", key="zeroshot_excluded")
-        norm_method = st.selectbox("Normalizing Method", ["aa_substitution_type", "aa_mutation"], key="zeroshot_norm")
-    
-    with col2:
-        st.markdown("""
-        ### MULTI-evolve: Protein Language Model Zero-shot Ensemble
-                    
-        This tool performs zero-shot predictions with a protein language model ensemble to nominate mutations.
-        
-        #### Input Files and Parameters
-        
-        - **Wildtype Amino Acid Sequence FASTA**: Protein sequence in FASTA format.
-        - **PDB/CIF Files**: One or more structure files in PDB or CIF format. Provide multiple structure files if there are different models (e.g. top 5 predicted structures from AlphaFold).
-        - **Chain ID**: Chain ID of the targeted protein in the structure files.
-        - **Number of Variants**: Number of variants to nominate per method (default: 24)
-        - **Excluded Positions**: Comma-separated list of positions to exclude from mutation (e.g. 1,5,20). Leave empty if no positions should be excluded.
-        - **Normalizing Method**: Method for normalizing fold-change scores:
-            - `aa_substitution_type`: Group by specific amino acid substitution type (e.g. all alanine to proline mutations, A→P mutations).
-            - `aa_mutation`: Group by amino acid mutation (e.g. all mutations to proline, →P).
-        
-        #### Outputs:
-        
-        A CSV file will be generated:
-        - `plm_zeroshot_ensemble_nominated_mutations.csv`: List of proposed variants and nominating methods.
-        """)
-        
-    if st.button("Run Zero-shot Predictions"):
+    with st.form("zeroshot_predictions_form"):
+        col1, col2 = st.columns([2,3])
+
+        with col1:
+            protein_name = st.text_input("Protein Name", key="zeroshot_protein")
+            wt_file_aa = st.file_uploader("Upload Wildtype Amino Acid Sequence FASTA", type=['fasta', 'fa'], key="zeroshot_wt")
+            pdb_files = st.file_uploader("Upload PDB/CIF Files", type=['pdb', 'cif'], accept_multiple_files=True, key="zeroshot_pdb")
+            st.divider()
+            chain_id = st.text_input("Chain ID", value="A", key="zeroshot_chain")
+            variants = st.number_input("Number of Variants", min_value=1, value=24)
+            excluded_pos = st.text_input("Excluded Positions (comma-separated, optional)", value="1,10,30", key="zeroshot_excluded")
+            norm_method = st.selectbox("Normalizing Method", ["aa_substitution_type", "aa_mutation"], key="zeroshot_norm")
+
+        with col2:
+            st.markdown("""
+            ### Protein Language Model Zero-shot Ensemble
+
+            This tool performs zero-shot predictions with a protein language model ensemble to nominate mutations.
+            """)
+            with st.expander("Input Files and Parameters", expanded=False):
+                st.markdown("""
+                - **Wildtype Amino Acid Sequence FASTA**: Protein sequence in FASTA format.
+                - **PDB/CIF Files**: One or more structure files in PDB or CIF format. Provide multiple structure files if there are different models (e.g. top 5 predicted structures from AlphaFold).
+                - **Chain ID**: Chain ID of the targeted protein in the structure files.
+                - **Number of Variants**: Number of variants to nominate per method (default: 24)
+                - **Excluded Positions**: Comma-separated list of positions to exclude from mutation (e.g. 1,5,20). Leave empty if no positions should be excluded.
+                - **Normalizing Method**: Method for normalizing fold-change scores:
+                    - `aa_substitution_type`: Group by specific amino acid substitution type (e.g. all alanine to proline mutations, A→P mutations).
+                    - `aa_mutation`: Group by amino acid mutation (e.g. all mutations to proline, →P).
+                """)
+            with st.expander("Outputs", expanded=False):
+                st.markdown("""
+                A CSV file will be generated:
+                - `plm_zeroshot_ensemble_nominated_mutations.csv`: List of proposed variants and nominating methods.
+                """)
+
+        submitted = st.form_submit_button("Run Zero-shot Predictions", type="primary")
+
+    if submitted:
         if not all([protein_name, wt_file_aa, pdb_files, chain_id]):
             st.error("Please fill in all required fields")
             return
@@ -554,26 +559,9 @@ def zeroshot_predictions():
                 command.extend(["--excluded-positions", excluded_pos])
 
             st.subheader("Terminal Output:")
-            # Add CSS styling for scrollable container
-            st.markdown("""
-                <style>
-                    .terminal-container {
-                        max-height: 400px;
-                        overflow-y: auto;
-                        border: 1px solid #ccc;
-                        padding: 10px;
-                        background-color: #f0f0f0;
-                        font-family: monospace;
-                        white-space: pre-wrap;
-                    }
-                </style>
-            """, unsafe_allow_html=True)
-
-            # Show the command in a separate code block
             st.code(f"$ {' '.join(command)}", language="bash")
 
-            # Create container for scrollable output
-            with st.container():
+            with st.container(border=True):
                 terminal_output = st.empty()
 
             with st.spinner("Running Zero-shot Predictions..."):
