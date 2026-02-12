@@ -617,48 +617,114 @@ def zeroshot_predictions():
 
 def about():
     st.markdown("""
-    
+
     This tool provides an interactive web app to perform the computational steps of MULTI-evolve (model-guided, universal, targeted installation of multi-mutants), an end-to-end framework for efficiently engineering hyperactive multi-mutants.
-    
+
     The interactive web app has the following uses:
     1. Implement the MULTI-evolve framework to propose multi-mutants and generate the associated MULTI-assembly mutagenic oligos for gene synthesis:
-                
+
         (a) Train fully connected neural networks to predict the fitness of a given sequence.
-                
+
         (b) Choose the best performing neural network and use it to predict combinatorial variants.
-                
+
         (c) For the chosen multi-mutants, generate the MULTI-assembly mutagenic oligos for gene synthesis.
-                
+
     2. Perform the Protein Language Model Zero-shot Ensemble Approach used in the MULTI-evolve framework.
     """)
+
+def file_locations():
+    st.markdown("### Where are my files saved?")
+    st.markdown("""
+    When you run any of the tools above, MULTI-evolve automatically creates a folder called **`proteins`**
+    (inside the main MULTI-evolve directory) to keep all of your work organized. Inside that folder,
+    each protein you work with gets its own sub-folder named after the **Protein Name** you entered.
+
+    Here is what that folder looks like and what each part contains:
+    """)
+
+    st.code("""
+proteins/
+└── your_protein_name/
+    │
+    ├── your_uploaded_files          ← Your uploaded FASTA, CSV, and structure files
+    │
+    ├── feature_cache/               ← Saved sequence features (speeds up re-runs)
+    │
+    ├── model_cache/                 ← Trained models and comparison results
+    │   └── your_dataset_name/
+    │       ├── objects/             ← The saved trained models
+    │       └── results/             ← Performance metrics from model comparisons
+    │
+    ├── proposers/                   ← Proposed multi-mutant variants
+    │   └── results/                 ← CSV files with proposed variants and scores
+    │
+    ├── split_cache/                 ← Saved data splits (train/test sets)
+    │
+    ├── cloning_sheet.csv            ← Which oligos to pool for each variant
+    ├── oligos.csv                   ← Oligo sequences for ordering
+    └── plm_zeroshot_ensemble_nominated_mutations.csv ← Nominated mutations from PLM ensemble
+    """, language=None)
+
+    st.markdown("#### Quick guide to finding your results")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.info(
+            "**After Step 1 (Train Models)**\n\n"
+            "Your trained models are saved in:\n\n"
+            "`proteins/your_protein_name/model_cache/`"
+        )
+        st.info(
+            "**After Step 3 (Generate Oligos)**\n\n"
+            "Your oligo designs are saved in:\n\n"
+            "`proteins/your_protein_name/cloning_sheet.csv`\n\n"
+            "`proteins/your_protein_name/oligos.csv`"
+        )
+
+    with col2:
+        st.info(
+            "**After Step 2 (Propose Multi-mutants)**\n\n"
+            "`proteins/your_protein_name/proposers/results/` — Predictions for all multi-mutant variants\n\n"
+            "`proteins/your_protein_name/multievolve_proposals.csv` — The proposed variants to test\n\n"
+        )
+        st.info(
+            "**After PLM Zero-shot Ensemble**\n\n"
+            "Your nominated mutations are saved in:\n\n"
+            "`proteins/your_protein_name/plm_zeroshot_ensemble_nominated_mutations.csv`"
+        )
 
 def main():
     """Main function to run the Streamlit app"""
     setup_page()
     
     # Create tabs for different functionalities
-    tab5, tab1, tab2, tab3, tab4 = st.tabs([
+    tab5, tab1, tab2, tab3, tab4, tab6 = st.tabs([
         "About",
-        "Train Models", 
-        "Propose Multi-mutants", 
+        "Train Models",
+        "Propose Multi-mutants",
         "Generate MULTI-assembly Oligos",
         "Perform PLM Zero-shot Ensemble",
+        "Output Files",
     ])
-    
+
     with tab5:
         about()
 
     with tab1:
         train_models()
-        
+
     with tab2:
         propose_mutations()
-        
+
     with tab3:
         design_oligos()
-        
+
     with tab4:
         zeroshot_predictions()
+
+    with tab6:
+        file_locations()
         
 
 

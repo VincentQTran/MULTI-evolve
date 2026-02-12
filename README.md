@@ -84,6 +84,34 @@ streamlit run app.py
 
 See the [Scripts README](scripts/README.md) to learn how to use MULTI-evolve via the Command-line.
 
+## Repository Structure
+
+```
+multievolve/                    # Main package
+├── featurizers/                # Sequence featurization modules
+├── predictors/                 # ML model training and prediction
+│   └── sweep_configs/          # Hyperparameter sweep configurations
+├── proposers/                  # Variant proposal modules
+├── splitters/                  # Data splitting strategies
+└── utils/                      # Utility functions
+
+data/                           # Example datasets
+notebooks/                      # Tutorial and benchmarking notebooks
+scripts/                        # Command-line workflow scripts
+
+proteins/                       # Cache directory (auto-generated)
+└── <protein_name>/
+    ├── feature_cache/          # Cached featurized sequences by featurizer type
+    ├── model_cache/            # Cached predictor objects by dataset
+    │   └── <dataset>/
+    │       ├── objects/        # Saved models
+    │       └── results/        # Model comparison results
+    ├── proposers/              # Evaluated proposed sequences
+    │   └── results/
+    └── split_cache/            # Cached splitter objects by dataset
+        └── <dataset>/
+```
+
 ## Training and comparing various machine learning models
 
 The MULTI-evolve package can be used to compare different data splitting methods, sequence featurizations, and machine learning models. In addition, the package can be used to perform zero-shot predictions with protein language models (ESM, ESM-IF). Examples are provided in the ```notebooks/examples``` folder. 
