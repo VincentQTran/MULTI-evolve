@@ -6,6 +6,8 @@
 
 Official repository for MULTI-evolve (model-guided, universal, targeted installation of multi-mutants), an end-to-end framework for efficiently engineering hyperactive multi-mutants. 
 
+For the latest updates, please visit https://github.com/ArcInstitute/MULTI-evolve.
+
 **The MULTI-evolve Python package has the following uses:**
 
 1. Implement the workflow for the MULTI-evolve framework including: training neural networks, proposing multi-mutants, generating MULTI-assembly mutagenic oligos for gene synthesis of proposed multi-mutants, implementing the language model zero-shot ensemble approach to nominate single mutants to experimentally test.
