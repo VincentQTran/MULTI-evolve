@@ -116,6 +116,10 @@ proteins/                       # Cache directory (auto-generated)
 
 The MULTI-evolve package can be used to compare different data splitting methods, sequence featurizations, and machine learning models. In addition, the package can be used to perform zero-shot predictions with protein language models (ESM, ESM-IF). Examples are provided in the ```notebooks/examples``` folder. 
 
+## Contributors
+
+Vincent Q. Tran ([VincentQTran](https://github.com/VincentQTran/)), Matthew Nemeth ([mnemeth66](https://github.com/mnemeth66)), and Brian Hie ([brianhie](https://github.com/brianhie)).
+
 ## Citation
 
 MULTI-evolve was developed by the Patrick Hsu Lab. If you use this code for your research, please cite our paper:
